@@ -8,6 +8,8 @@ import { logErrors } from "./middlewares/errors/logErrors.js";
 const app = express();
 const httpServer = createServer(app);
 
+import { sendEmail } from "./utils/email.js";
+
 // Middleware configuration
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -18,10 +20,30 @@ app.use(
 );
 
 // routes
-app.use("/send-email", (req, res, next) => {
-    return res.json({
-        test: "Hello",
-    });
+app.post("/send-email", (req, res, next) => {
+    try {
+        if (!req?.body?.name || !req?.body?.emailAddress || !req?.body?.message) {
+            return res.status(400).json({
+                error: "Name, email address and message fields are required",
+            });
+        }
+
+        const { emailAddress, name, message } = req.body;
+        console.log(`New email from ${name}`);
+        sendEmail({
+            from: emailAddress,
+            text: `Message from ${name[0].toUpperCase() + name.slice(1)} :
+
+        ${message}
+        `,
+        });
+
+        return res.status(200).json({
+            message: "message delivered to John successfully",
+        });
+    } catch (error) {
+        next(error);
+    }
 });
 
 app.use(logErrors);
