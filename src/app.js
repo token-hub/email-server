@@ -4,6 +4,7 @@ import { createServer } from "http";
 
 import { errorHandler } from "./middlewares/errors/errorHandler.js";
 import { logErrors } from "./middlewares/errors/logErrors.js";
+import { limiter } from "./middlewares/rateLimit.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -18,6 +19,7 @@ app.use(
         origin: process.env.CLIENT_URL,
     })
 );
+app.use(limiter);
 
 // routes
 app.post("/send-email", (req, res, next) => {
